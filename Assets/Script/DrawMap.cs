@@ -5,10 +5,13 @@ using System;
 
 public class DrawMap : MonoBehaviour
 {
-    // Start is called before the first frame update
-    public int Size = 5;
+    [SerializeField]
+    private int Size = 5;
+
     public Box BoxMap;
-    //public GameObject Cube;
+
+    private Box Root, NextBox;
+    
     public Box[][] ListBox;
 
     public Box[] GameWays;
@@ -20,15 +23,16 @@ public class DrawMap : MonoBehaviour
         {
             ListBox[i] = new Box[Size];
         }
-        RamdomPosition(BoxMap);
+        
         CreateMap();
-
+        GetFirstRoot();
+        //RamdomPosition();
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-
+        
     }
 
     public void CreateMap()
@@ -47,8 +51,11 @@ public class DrawMap : MonoBehaviour
                 Next.transform.position = new Vector3(x, 0, y);
                 Next.name = x + "," + y;
                 Next.transform.SetParent(transform);
-
+                Next.GetComponent<Renderer>().enabled = false;
                 ListBox[x][y] = Next;
+                if (x >= 3 && x <= 11)
+                    if(y >= 3 && y <= 11)
+                        Next.ValidBox = true;
                 if (y != 0)
                 {
                     Next.AddLeft(ListBox[x][y - 1]);
@@ -71,20 +78,32 @@ public class DrawMap : MonoBehaviour
 
     }
 
-    private void RamdomPosition(Box Root)
+    private void RamdomPosition()
     {
-
-
+        while(NextBox != null)
+            NextBox = AvailableArea.NextBox(NextBox);
     }
 
     private void GetFirstRoot()
     {
         System.Random random = new System.Random();
-        int x = random.Next(4, 12);
-        int[] lstIdex = { 4, 5, 6, 7, 8, 9, 10, 11, 12 };
-        if (x >= 7 || x > 12)
+        int x, y;
+        do
         {
-
+            x = random.Next(3, 12);
+            y = random.Next(3, 12);
         }
+        while (AvailableArea.CheckArea(x, y));
+        Root = ListBox[x][y];
+        NextBox = AvailableArea.NextBox(ListBox[x][y]);
+        ActiveBox(Root);
+        while(NextBox != null)
+            NextBox = AvailableArea.NextBox(NextBox);
     }
+
+    private void ActiveBox(Box box)
+    {
+        box.GetComponent<Renderer>().enabled = true;
+    }
+
 }
